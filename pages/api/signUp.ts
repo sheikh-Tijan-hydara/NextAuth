@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import app from '../../firebase/clientApp'; 
 import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore/lite';
+import { hash } from 'bcrypt';
 
 const db = getFirestore(app);
 
@@ -10,6 +11,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if(req.body.password !== req.body.confirmPassword) return res.status(400).json({message: "Passwords do not match"});
     if(req.body.password.length < 6) return res.status(400).json({message: "Password must be at least 6 characters"});
     if(!req.body.username || !req.body.email || !req.body.password) return res.status(400).json({message: "Please fill in all fields"});
+
+    const hashedPassword = await hash(req.body.password, 10);
 
     try{
         const usersCollection = collection(db, 'users');
@@ -23,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const UserRef = await addDoc(usersCollection, {
             username: req.body.username,
             email: req.body.email,
-            password: req.body.password,
+            password: hashedPassword,
         });
         res.status(201).json({message: "Successfully signed up", user: { username: req.body.username, email: req.body.email }});
     } catch (error){

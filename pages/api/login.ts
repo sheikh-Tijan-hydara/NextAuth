@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import app from '../../firebase/clientApp'; 
 import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
+import { compareSync} from 'bcrypt';
+
 
 const db = getFirestore(app);
 export default async function handleer( req: NextApiRequest, res: NextApiResponse ) {
@@ -11,11 +13,14 @@ export default async function handleer( req: NextApiRequest, res: NextApiRespons
         const usersCollection = collection(db, 'users');
         const userSnapshot = await getDocs(usersCollection);
         let foundUser = false; 
-        userSnapshot.forEach((doc) => {
-            if(doc.data().username === req.body.username && doc.data().password === req.body.password){
-                res.status(200).json({ message: "Successfully logged in" , user: { username: doc.data().username, email: doc.data().email}});
-                console.log("Successfully logged in", doc.data().username, doc.data().email);
-                foundUser = true; 
+        userSnapshot.forEach(async (doc) => {
+            if (doc.data().username === req.body.username) {
+                const isPasswordMatch = compareSync(req.body.password, doc.data().password);
+                if (isPasswordMatch) {
+                    res.status(200).json({ message: "Successfully logged in", user: { username: doc.data().username, email: doc.data().email } });
+                    console.log("Successfully logged in", doc.data().username, doc.data().email);
+                    foundUser = true;
+                }
             }
         });
 
