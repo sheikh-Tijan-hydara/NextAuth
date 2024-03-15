@@ -22,6 +22,9 @@ export default function Home() {
     })
       .then((res) => res.json())
       .then((data) => alert(data.message));
+
+    setUsername("");
+    setPassword("");
   };
   return (
     <main
