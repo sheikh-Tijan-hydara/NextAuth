@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import app from '../../firebase/clientApp'; 
-import { getFirestore, collection, getDocs, addDoc } from 'firebase/firestore/lite';
+import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
 
 const db = getFirestore(app);
 export default async function handleer( req: NextApiRequest, res: NextApiResponse ) {
@@ -13,6 +13,9 @@ export default async function handleer( req: NextApiRequest, res: NextApiRespons
         userSnapshot.forEach((doc) => {
             if(doc.data().username === req.body.username && doc.data().password === req.body.password){
                 res.status(200).json({ message: "Successfully logged in" , user: { username: doc.data().username, email: doc.data().email}});
+                console.log("Successfully logged in", doc.data().username, doc.data().email);
+            }else{
+                res.status(400).json({ message: "Invalid credentials" });
             }
         });
 
