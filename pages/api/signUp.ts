@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import app from '../../firebase/clientApp'; 
-import { getFirestore, collection, addDoc } from 'firebase/firestore/lite';
+import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore/lite';
 
 const db = getFirestore(app);
 
@@ -13,6 +13,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try{
         const usersCollection = collection(db, 'users');
+        const userSnapshot = await getDocs(usersCollection);
+
+        userSnapshot.forEach((doc) => {
+            if(doc.data().email === req.body.email){
+                return res.status(400).json({message: "email already exists"});
+            }
+        });
         const UserRef = await addDoc(usersCollection, {
             username: req.body.username,
             email: req.body.email,
