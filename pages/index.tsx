@@ -8,21 +8,25 @@ export default function Home() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     if (!username || !password) return alert("Please fill in all fields");
     if (password.length < 6)
       return alert("Password must be at least 6 characters");
-    fetch("/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    })
-      .then((res) => res.json())
-      .then((data) => alert(data.message));
-    setPassword("");
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await response.json();
+      alert(data.message);
+      setPassword("");
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
   };
   return (
     <main
